@@ -53,7 +53,8 @@ var DEFAULT_SETTINGS = {
         
     onResult: null,
     onAdd: null,
-    onDelete: null
+    onDelete: null,
+    idPrefix: "token-input-"
 };
 
 
@@ -196,6 +197,7 @@ $.TokenList = function (input, url_or_data_or_function, settings) {
         .css({
             outline: "none"
         })
+        .attr("id", settings.idPrefix + input.id)
         .focus(function () {
             if (settings.tokenLimit === null || settings.tokenLimit !== token_count) {
                 show_dropdown_hint();
