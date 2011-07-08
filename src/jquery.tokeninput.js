@@ -647,8 +647,10 @@ $.TokenList = function (input, url_or_data_or_function, settings) {
         }
 
         // Insert the new tokens
-        insert_token(li_data);
-        checkTokenLimit();
+        if(settings.tokenLimit == null || token_count < settings.tokenLimit) {
+            insert_token(li_data);
+            checkTokenLimit();
+        }
 
         // Clear input box
         input_box.val("");
