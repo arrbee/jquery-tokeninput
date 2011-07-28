@@ -480,11 +480,8 @@ $.TokenList = function (input, url_or_data_or_function, settings) {
                 return false;
             }
         });
-        
-        if(li_data.length >= settings.tokenLimit && settings.tokenLimit != null) {
-            input_box.hide();
-            hide_dropdown();
-        }
+
+        checkTokenLimit();
     }
     
     
@@ -525,7 +522,16 @@ $.TokenList = function (input, url_or_data_or_function, settings) {
     //
     // Private functions
     //
-    
+
+    function checkTokenLimit(){
+        if(settings.tokenLimit !== null && token_count >= settings.tokenLimit) {
+            input_box.hide();
+            hide_dropdown();
+            return;
+        } else {
+            input_box.focus();
+        }
+    }
 
     function resize_input() {
         if(input_val === (input_val = input_box.val())) {return;}
@@ -642,20 +648,13 @@ $.TokenList = function (input, url_or_data_or_function, settings) {
 
         // Insert the new tokens
         insert_token(li_data);
-        
+        checkTokenLimit();
+
         // Clear input box
         input_box.val("");
 
-        // Check the token limit
-        if(settings.tokenLimit !== null && token_count >= settings.tokenLimit) {
-            input_box.hide();
-            hide_dropdown();
-        } else {
-            input_box.focus();
-
-            // Don't show the help dropdown, they've got the idea
-            hide_dropdown();
-        }
+        // Don't show the help dropdown, they've got the idea
+        hide_dropdown();
 
         // Execute the onAdd callback if defined
         if($.isFunction(callback)) {
