@@ -157,8 +157,8 @@ $.TokenList = function (input, url_or_data_or_function, settings) {
                 settings.crossDomain = (location.href.split(/\/+/g)[1] !== settings.url.split(/\/+/g)[1]);
             }
         }
-	} else if(typeof(url_or_data_or_function) === "function") {
-		settings.sourceFunction = url_or_data_or_function;
+    } else if(typeof(url_or_data_or_function) === "function") {
+        settings.sourceFunction = url_or_data_or_function;
     } else if(typeof(url_or_data_or_function) === "object") {
         // Set the local data to search through
         settings.local_data = url_or_data_or_function;
@@ -1133,17 +1133,23 @@ $.TokenList = function (input, url_or_data_or_function, settings) {
 
                 // Make the request
                 $.ajax(ajax_params);
-            } else if(settings.local_data) {
-                // Do the search through local data
-                var results = $.grep(settings.local_data, function (row) {
-                    var founded = false;
-                    $(settings.searchColumns).each(function(i, item) {
-                        if(row[item].toString().toLowerCase().removeDiacritics().indexOf(query.toString().toLowerCase().removeDiacritics()) > -1) {
-                            founded = true;
-                        }
+            } else if(settings.local_data || settings.sourceFunction) {
+                var results = [];
+                if (settings.sourceFunction) {
+                    // Execute the sourceFunction to get results
+                    results = settings.sourceFunction(query);
+                } else {
+                    // Do the search through local data
+                    results = $.grep(settings.local_data, function (row) {
+                        var founded = false;
+                        $(settings.searchColumns).each(function(i, item) {
+                            if(row[item].toString().toLowerCase().removeDiacritics().indexOf(query.toString().toLowerCase().removeDiacritics()) > -1) {
+                                founded = true;
+                            }
+                        });
+                        return founded;
                     });
-                    return founded;
-                });
+                }
 
                 if($.isFunction(settings.onResult)) {
                     results = settings.onResult.call(hidden_input, results);
