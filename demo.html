@@ -1,5 +1,7 @@
 <html>
 <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
     <script type="text/javascript" src="src/jquery.tokeninput.js"></script>
 
@@ -63,6 +65,21 @@
         $(document).ready(function() {
             $("#demo-input-facebook-theme").tokenInput("http://shell.loopj.com/tokeninput/tvshows.php", {
                 theme: "facebook"
+            });
+        });
+        </script>
+    </div>
+
+
+    <h2 id="theme">Facebook Theme & Sortable</h2>
+    <div>
+        <input type="text" id="demo-input-facebook-theme-sortable" name="blah2" />
+        <input type="button" value="Submit" />
+        <script type="text/javascript">
+        $(document).ready(function() {
+            $("#demo-input-facebook-theme-sortable").tokenInput("http://shell.loopj.com/tokeninput/tvshows.php", {
+                theme: "facebook",
+                makeSortable: true
             });
         });
         </script>
@@ -212,8 +229,65 @@
         });
         </script>
     </div>
+    
+    <h2 id="allowcustomentry">Allowing Custom Entry</h2>
+    <div>
+        <input type="text" id="demo-input-allowcustomentry" name="blah" />
+        <input type="button" value="Submit" />
+        <script type="text/javascript">
+        $(document).ready(function() {
+            $("#demo-input-allowcustomentry").tokenInput("http://shell.loopj.com/tokeninput/tvshows.php", {
+                allowCustomEntry: true
+            });
+        });
+        </script>
+    </div>
+    
+    <h2 id="customformatter">Custom Result Formatter for JSON</h2>
+    <div>
+        <input type="text" id="demo-input-customformatter" name="blah" />
+        <input type="button" value="Submit" />
+        <script type="text/javascript">
+        $(document).ready(function() {
+            $("#demo-input-customformatter").tokenInput("http://shell.loopj.com/tokeninput/tvshows.php", {
+                allowCustomEntry: true,
+                tokensFormatter: function(tokens)
+                {
+                    var result = [];
+                    console.log(tokens);
+                    for(var key in tokens)
+                        result.push('"' + tokens[key].name.replace(/"/g, '\\"') + '"');
+                    return '[' + result.join(',') + ']';
+                }
+            });
+        });
+        </script>
+    </div>
 
-
+    <h2 id="parsename">Using local data with parseName function and searchColumns setting</h2>
+    <div>
+        <input type="text" id="demo-input-parsename" name="blah" />
+        <input type="button" value="Submit" />
+        <script type="text/javascript">
+        $(document).ready(function() {
+            $("#demo-input-parsename").tokenInput([
+                {id: 1, name: 'New York', state: 'NY'},
+                {id: 2, name: 'Palo Alto', state: 'CA'},
+                {id: 3, name: 'San Francisco', state: 'CA'},
+                {id: 4, name: 'Boston', state: 'MA'},
+                {id: 5, name: 'São Paulo', state: 'SP'},
+                {id: 6, name: 'Vitória', state: 'ES'}
+            ],
+            {
+                parseName: function(element) {
+                    return element.name + ', '+ element.state;
+                },
+                searchColumns: ['name', 'state']
+            });
+        });
+        </script>
+    </div>
+    
     <h2 id="plugin-methods">Using the add, remove and clear Methods</h2>
     <div>
         <a href="#" id="plugin-methods-add">Add Token</a> | <a href="#" id="plugin-methods-remove">Remove Token</a> | <a href="#" id="plugin-methods-clear">Clear Tokens</a><br />
