@@ -71,6 +71,7 @@ var DEFAULT_CLASSES = {
     dropdown: "token-input-dropdown",
     dropdownItem: "token-input-dropdown-item",
     dropdownItem2: "token-input-dropdown-item2",
+    dropdownHint: "token-input-hint",
     selectedDropdownItem: "token-input-selected-dropdown-item",
     inputToken: "token-input-input-token",
     insertBefore: "token-input-insert-before",
@@ -936,7 +937,10 @@ $.TokenList = function (input, url_or_data_or_function, settings) {
 
     function show_dropdown_hint () {
         if(settings.hintText) {
-            dropdown.html("<p>"+settings.hintText+"</p>");
+            dropdown.empty();
+            var hint = $("<p>"+settings.hintText+"</p>")
+                .addClass(settings.classes.dropdownHint)
+                .appendTo(dropdown);
             show_dropdown();
         }
     }
@@ -1092,6 +1096,20 @@ $.TokenList = function (input, url_or_data_or_function, settings) {
         if(cached_results) {
             populate_dropdown(query.toLowerCase(), cached_results);
         } else {
+            var results_callback = function(results) {
+                if($.isFunction(settings.onResult)) {
+                    results = settings.onResult.call(hidden_input, results);
+                }
+                if (settings.jsonContainer && typeof(results) === "object" && settings.jsonContainer in results) {
+                    results = results[settings.jsonContainer];
+                }
+                cache.add(query, results);
+                // only populate the dropdown if the results are associated with the active search query
+                if(input_box.val().toLowerCase() === query.toLowerCase()) {
+                    populate_dropdown(query, results);
+                }
+            };
+
             // Are we doing an ajax search or local data search?
             if(settings.url) {
                 // Extract exisiting get params
@@ -1117,45 +1135,28 @@ $.TokenList = function (input, url_or_data_or_function, settings) {
                 if(settings.crossDomain) {
                     ajax_params.dataType = "jsonp";
                 }
-
-                // Attach the success callback
-                ajax_params.success = function(results) {
-                  if($.isFunction(settings.onResult)) {
-                      results = settings.onResult.call(hidden_input, results);
-                  }
-                  cache.add(query, settings.jsonContainer ? results[settings.jsonContainer] : results);
-
-                  // only populate the dropdown if the results are associated with the active search query
-                  if(input_box.val().toLowerCase() === query.toLowerCase()) {
-                      populate_dropdown(query, settings.jsonContainer ? results[settings.jsonContainer] : results);
-                  }
-                };
+                ajax_params.success = results_callback;
 
                 // Make the request
                 $.ajax(ajax_params);
-            } else if(settings.local_data || settings.sourceFunction) {
-                var results = [];
-                if (settings.sourceFunction) {
-                    // Execute the sourceFunction to get results
-                    results = settings.sourceFunction(query);
-                } else {
-                    // Do the search through local data
-                    results = $.grep(settings.local_data, function (row) {
-                        var founded = false;
-                        $(settings.searchColumns).each(function(i, item) {
-                            if(row[item].toString().toLowerCase().removeDiacritics().indexOf(query.toString().toLowerCase().removeDiacritics()) > -1) {
-                                founded = true;
-                            }
-                        });
-                        return founded;
+            }
+            else if(settings.sourceFunction) {
+                // Execute the sourceFunction to get results
+                settings.sourceFunction(query, results_callback);
+            }
+            else if(settings.local_data) {
+                // Do the search through local data
+                var results = $.grep(settings.local_data, function (row) {
+                    var founded = false;
+                    $(settings.searchColumns).each(function(i, item) {
+                        if(row[item].toString().toLowerCase().removeDiacritics().indexOf(query.toString().toLowerCase().removeDiacritics()) > -1) {
+                            founded = true;
+                        }
                     });
-                }
+                    return founded;
+                });
 
-                if($.isFunction(settings.onResult)) {
-                    results = settings.onResult.call(hidden_input, results);
-                }
-                cache.add(query, results);
-                populate_dropdown(query, results);
+                results_callback(results);
             }
         }
     }
